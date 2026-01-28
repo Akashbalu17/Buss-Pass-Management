@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Check Bus Pass Status</title>
+</head>
+<body>
+  <h2>Check Application Status</h2>
+
+  <input id="appNo" placeholder="Enter Application Number">
+  <button onclick="check()">Check</button>
+
+  <pre id="result"></pre>
+
+<script>
+function check() {
+  const appNo = document.getElementById("appNo").value;
+
+  fetch(`/check-status/${appNo}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.error) {
+        document.getElementById("result").innerText = data.error;
+      } else {
+        document.getElementById("result").innerText =
+          "Name: " + data.studentName + "\n" +
+          "College: " + data.collegeName + "\n" +
+          "Route: " + data.startRoute + " → " + data.endRoute + "\n" +
+          "Status: " + data.status;
+      }
+    });
+}
+</script>
+</body>
+</html>

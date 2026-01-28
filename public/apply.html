@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bus Pass Application</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body style="background:#f2f6fc;">
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-9">
+      <div class="card p-4 shadow">
+
+<h3 class="text-center mb-3">Student Bus Pass Application Form</h3>
+
+<form id="appForm" action="/apply" method="POST" enctype="multipart/form-data">
+
+<!-- APPLICATION NUMBER -->
+<label>Application Number</label>
+<input type="text" class="form-control mb-3" name="applicationNo"
+       id="applicationNo" readonly>
+
+<!-- FILE UPLOADS -->
+<label>Student Photo</label>
+<input type="file" class="form-control mb-3" name="studentPhoto" required>
+
+<label>Aadhaar File</label>
+<input type="file" class="form-control mb-3" name="aadhaarFile" required>
+
+<label>College ID Proof</label>
+<input type="file" class="form-control mb-3" name="idProof" required>
+
+<!-- BASIC DETAILS -->
+<input class="form-control mb-3" name="studentName" placeholder="Student Name" required>
+<input class="form-control mb-3" name="fatherName" placeholder="Father Name" required>
+
+<div class="row">
+  <div class="col">
+    <label>DOB</label>
+    <input type="date" class="form-control" name="dob" id="dob" required>
+  </div>
+  <div class="col">
+    <label>Age</label>
+    <input type="text" class="form-control" name="age" id="age" readonly>
+  </div>
+</div>
+
+<select class="form-control my-3" name="gender" required>
+  <option value="">Select Gender</option>
+  <option>Male</option>
+  <option>Female</option>
+  <option>Other</option>
+</select>
+
+<input class="form-control mb-3" name="studentContact" placeholder="Student Contact" required>
+<input class="form-control mb-3" name="parentContact" placeholder="Parent Contact" required>
+
+<input class="form-control mb-3" type="email" name="personalEmail" placeholder="Personal Email" required>
+<input class="form-control mb-3" type="email" name="collegeEmail" placeholder="College Email" required>
+
+<input class="form-control mb-3" name="collegeName" placeholder="College Name" required>
+<input class="form-control mb-3" name="department" placeholder="Department" required>
+<input class="form-control mb-3" name="year" placeholder="Year" required>
+
+<textarea class="form-control mb-3" name="collegeAddress" placeholder="College Address" required></textarea>
+
+<input class="form-control mb-3" name="startRoute" placeholder="Starting Route" required>
+<input class="form-control mb-3" name="endRoute" placeholder="Ending Route" required>
+
+<!-- CAPTCHA -->
+<label>Captcha</label>
+<div class="d-flex gap-3 mb-2 align-items-center">
+  <span id="captcha" class="fw-bold fs-4 text-primary"></span>
+  <button type="button" class="btn btn-sm btn-secondary" onclick="generateCaptcha()">↻</button>
+</div>
+<input type="text" id="captchaInput" class="form-control mb-3" required>
+
+<button class="btn btn-success w-100">Submit Application</button>
+
+</form>
+
+</div>
+</div>
+</div>
+</div>
+
+<!-- JAVASCRIPT -->
+<script>
+// AGE CALCULATION
+function calculateAge() {
+  const dob = new Date(document.getElementById("dob").value);
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  if (
+    today.getMonth() < dob.getMonth() ||
+    (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())
+  ) age--;
+  document.getElementById("age").value = age;
+}
+document.getElementById("dob").addEventListener("change", calculateAge);
+
+// APPLICATION NUMBER
+function generateApplicationNo() {
+  return Math.floor(10000000 + Math.random() * 90000000);
+}
+document.getElementById("applicationNo").value = generateApplicationNo();
+
+// CAPTCHA
+let captchaText = "";
+function generateCaptcha() {
+  captchaText = Math.random().toString(36).substring(2, 8).toUpperCase();
+  document.getElementById("captcha").innerText = captchaText;
+}
+document.getElementById("appForm").addEventListener("submit", function (e) {
+  if (document.getElementById("captchaInput").value !== captchaText) {
+    alert("Invalid Captcha");
+    e.preventDefault();
+  }
+});
+generateCaptcha();
+</script>
+
+</body>
+</html>

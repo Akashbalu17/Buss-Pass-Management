@@ -1,0 +1,89 @@
+body {
+  .top-header {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 1000;
+}
+
+.logo {
+    width: 45px;
+    height: 45px;
+}
+
+.title-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+}
+
+  background: linear-gradient(
+      rgba(13, 110, 253, 0.25),
+      rgba(13, 110, 253, 0.25)
+    ),
+    url("bus-bg.jpg") no-repeat center center fixed;
+  background-size: cover;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Main Card */
+.form-card, .card {
+  background: #ffffff;
+  border-radius: 12px;
+  border: none;
+}
+
+/* Headings */
+h2, h3 {
+  color: #0d6efd;
+  font-weight: 600;
+}
+
+/* Labels */
+label {
+  font-weight: 500;
+  color: #343a40;
+}
+
+/* Inputs */
+.form-control, .form-select {
+  border-radius: 6px;
+  border: 1px solid #ced4da;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.15rem rgba(13,110,253,.25);
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: #0d6efd;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: #084298;
+}
+
+.btn-success {
+  background-color: #198754;
+  border: none;
+}
+
+.btn-success:hover {
+  background-color: #146c43;
+}
+
+/* Navbar style (future use) */
+.navbar {
+  background-color: #0d6efd;
+}
+
+.navbar-brand {
+  color: #fff !important;
+  font-weight: 600;
+}
