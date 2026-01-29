@@ -9,6 +9,19 @@ const Application = require("./models/Application");
 const Admin = require("./models/Admin");
 
 const app = express();
+const rejectionReasons = [
+  "Incomplete application details",
+  "Invalid Aadhaar document",
+  "Invalid college ID proof",
+  "Photo not clear",
+  "Route details incorrect",
+  "College email not valid",
+  "Duplicate application",
+  "Age criteria not met",
+  "Document mismatch",
+  "Other verification issue"
+];
+
 
 /* ================= CREATE UPLOAD FOLDERS ================= */
 ["uploads", "uploads/photos", "uploads/aadhaar", "uploads/idproof"].forEach(f => {
@@ -176,22 +189,11 @@ app.post("/check-status", async (req, res) => {
 
   if (!appData) {
     return res.send(`
-<!DOCTYPE html>
-<html>
-<head>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-
-<body class="bg-light d-flex align-items-center" style="height:100vh">
-<div class="container text-center">
-  <div class="card shadow p-4">
-    <h4 class="text-danger">❌ Application Not Found</h4>
-    <a href="/status" class="btn btn-secondary mt-3">Try Again</a>
-  </div>
-</div>
-</body>
-</html>
-`);
+      <h3 style="color:red;text-align:center;">❌ Application Not Found</h3>
+      <div style="text-align:center;">
+        <a href="/status">Try Again</a>
+      </div>
+    `);
   }
 
   const color =
@@ -216,6 +218,7 @@ app.post("/check-status", async (req, res) => {
   <div class="row justify-content-center">
     <div class="col-md-6">
       <div class="card shadow text-center p-4">
+
         <h4 class="mb-3">Status</h4>
         <span class="badge bg-${color} fs-5">${appData.status}</span>
 
@@ -224,7 +227,35 @@ app.post("/check-status", async (req, res) => {
         <p><b>Application No:</b> ${appData.applicationNo}</p>
         <p><b>Name:</b> ${appData.studentName}</p>
 
-        <a href="/status" class="btn btn-secondary mt-3">Check Another</a>
+        ${
+          appData.status === "Rejected"
+            ? `<div class="alert alert-danger mt-3">
+                 <b>Reason for Rejection:</b><br>
+                 ${appData.rejectionReason || "Not specified"}
+               </div>`
+            : ""
+        }
+
+        ${
+          appData.status === "Approved"
+            ? `<div class="alert alert-success mt-3">
+                 🎉 Your application is approved.
+               </div>`
+            : ""
+        }
+
+        ${
+          appData.status === "Pending"
+            ? `<div class="alert alert-warning mt-3">
+                 ⏳ Your application is under review.
+               </div>`
+            : ""
+        }
+
+        <a href="/status" class="btn btn-secondary mt-3">
+          Check Another Application
+        </a>
+
       </div>
     </div>
   </div>
@@ -234,6 +265,7 @@ app.post("/check-status", async (req, res) => {
 </html>
 `);
 });
+
 
 /* ================= ADMIN LOGIN PAGE ================= */
 app.get("/admin", (req, res) => {
@@ -291,32 +323,70 @@ function isAdmin(req, res, next) {
 
 /* ================= ADMIN DASHBOARD ================= */
 app.get("/admin-dashboard", isAdmin, async (req, res) => {
-  const apps = await Application.find();
+  const apps = await Application.find().sort({ createdAt: -1 });
+
+  const reasonOptions = rejectionReasons
+    .map(r => `<option value="${r}">${r}</option>`)
+    .join("");
 
   const rows = apps.map(a => `
     <tr>
-      <td>${a.applicationNo}</td>
-      <td>${a.studentName}</td>
+      <td>${a.applicationNo || "N/A"}</td>
+      <td>${a.studentName || "N/A"}</td>
+
       <td>
         <span class="badge ${
           a.status === "Approved" ? "bg-success" :
-          a.status === "Rejected" ? "bg-danger" : "bg-warning"
-        }">${a.status}</span>
-      </td>
-      <td>
-        <a href="/approve/${a._id}" class="btn btn-sm btn-success">Approve</a>
-        <a href="/reject/${a._id}" class="btn btn-sm btn-danger">Reject</a>
-      </td>
-      <td>
-  <a href="/approve/${a._id}" class="btn btn-sm btn-success">Approve</a>
-  <a href="/reject/${a._id}" class="btn btn-sm btn-danger">Reject</a>
+          a.status === "Rejected" ? "bg-danger" :
+          "bg-warning text-dark"
+        }">
+          ${a.status}
+        </span>
 
-  ${a.status === "Approved" ? `
-    <a href="/id-card/${a._id}" class="btn btn-sm btn-primary mt-1">
-      🎫 ID Card
-    </a>` : ""}
-</td>
+        ${
+          a.status === "Rejected"
+            ? `<div class="text-danger small mt-1">
+                <strong>Reason:</strong>
+                ${a.rejectionReason || "Reason not recorded"}
+              </div>`
+            : ""
+        }
+      </td>
 
+      <td>
+      <a href="/admin/application/${a._id}" class="btn btn-primary btn-sm w-100 mb-2">
+  👁 View Application
+</a>
+
+        ${
+          a.status === "Pending"
+            ? `
+              <form action="/reject/${a._id}" method="POST" class="mb-2">
+                <select name="reason" class="form-select mb-2" required>
+                  <option value="" disabled selected>
+                    -- Select Rejection Reason --
+                  </option>
+                  ${reasonOptions}
+                </select>
+
+                <button class="btn btn-danger btn-sm w-100">
+                  Reject
+                </button>
+              </form>
+
+              <a href="/approve/${a._id}" class="btn btn-success btn-sm w-100">
+                Approve
+              </a>
+            `
+            : a.status === "Approved"
+            ? `
+              <a href="/id-card/${a._id}" class="btn btn-primary btn-sm w-100">
+                🎫 Generate ID Card
+              </a>
+            `
+            : `<span class="text-muted">No action available</span>`
+        }
+      </td>
     </tr>
   `).join("");
 
@@ -324,8 +394,8 @@ app.get("/admin-dashboard", isAdmin, async (req, res) => {
 <!DOCTYPE html>
 <html>
 <head>
-<title>Admin Dashboard</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <title>Admin Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body class="bg-light">
@@ -346,7 +416,7 @@ app.get("/admin-dashboard", isAdmin, async (req, res) => {
             <th>Application No</th>
             <th>Student Name</th>
             <th>Status</th>
-            <th>Action</th>
+            <th width="35%">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -369,10 +439,110 @@ app.get("/approve/:id", isAdmin, async (req, res) => {
   res.redirect("/admin-dashboard");
 });
 
-app.get("/reject/:id", isAdmin, async (req, res) => {
-  await Application.findByIdAndUpdate(req.params.id, { status: "Rejected" });
+app.post("/reject/:id", isAdmin, async (req, res) => {
+  const { reason } = req.body;
+
+  await Application.findByIdAndUpdate(req.params.id, {
+    status: "Rejected",
+    rejectionReason: reason
+  });
+
   res.redirect("/admin-dashboard");
 });
+app.get("/admin/application/:id", isAdmin, async (req, res) => {
+  const appData = await Application.findById(req.params.id);
+  if (!appData) return res.send("Application not found");
+
+  const reasonOptions = rejectionReasons
+    .map(r => `<option value="${r}">${r}</option>`)
+    .join("");
+
+  res.send(`
+<!DOCTYPE html>
+<html>
+<head>
+  <title>View Application</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-dark px-4">
+  <span class="navbar-brand">📝 Application Review</span>
+  <a href="/admin-dashboard" class="btn btn-outline-light btn-sm">⬅ Back</a>
+</nav>
+
+<div class="container mt-4">
+  <div class="card shadow">
+    <div class="card-body">
+
+      <h5 class="mb-3">Student Details</h5>
+
+      <table class="table table-bordered">
+        <tr><th>Application No</th><td>${appData.applicationNo}</td></tr>
+        <tr><th>Name</th><td>${appData.studentName}</td></tr>
+        <tr><th>Father Name</th><td>${appData.fatherName}</td></tr>
+        <tr><th>DOB</th><td>${appData.dob}</td></tr>
+        <tr><th>Gender</th><td>${appData.gender}</td></tr>
+        <tr><th>Student Contact</th><td>${appData.studentContact}</td></tr>
+        <tr><th>College</th><td>${appData.collegeName}</td></tr>
+        <tr><th>Department</th><td>${appData.department}</td></tr>
+        <tr><th>Route</th><td>${appData.startRoute} → ${appData.endRoute}</td></tr>
+        <tr><th>Status</th><td>${appData.status}</td></tr>
+      </table>
+
+      ${
+        appData.status === "Pending"
+          ? `
+          <div class="row mt-3">
+            <div class="col-md-6">
+              <a href="/approve/${appData._id}" class="btn btn-success w-100">
+                ✅ Approve
+              </a>
+            </div>
+
+            <div class="col-md-6">
+              <form action="/reject/${appData._id}" method="POST">
+                <select name="reason" class="form-select mb-2" required>
+                  <option value="" disabled selected>
+                    -- Select Rejection Reason --
+                  </option>
+                  ${reasonOptions}
+                </select>
+
+                <button class="btn btn-danger w-100">
+                  ❌ Reject
+                </button>
+              </form>
+            </div>
+          </div>
+          `
+          : appData.status === "Rejected"
+          ? `
+            <div class="alert alert-danger mt-3">
+              <strong>Rejected Reason:</strong>
+              ${appData.rejectionReason}
+            </div>
+          `
+          : `
+            <div class="alert alert-success mt-3">
+              Application Approved
+            </div>
+          `
+      }
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
+`);
+});
+
+
+
+
 /* ================= ID Card Generation ================= */
 const PDFDocument = require("pdfkit");
 
