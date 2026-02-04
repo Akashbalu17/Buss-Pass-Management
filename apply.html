@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Student Bus Pass Application</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+<style>
+body {
+  background: #f2f6fb;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.gov-header {
+  background: linear-gradient(90deg, #0b5ed7, #198754);
+  color: white;
+  padding: 15px;
+}
+
+.form-card {
+  border-radius: 10px;
+  border: none;
+}
+
+.section-title {
+  background: #e9f2ff;
+  padding: 8px 12px;
+  border-left: 5px solid #0b5ed7;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+label {
+  font-weight: bold;
+}
+
+.required::after {
+  content: " *";
+  color: red;
+}
+
+.captcha-box {
+  font-size: 22px;
+  letter-spacing: 4px;
+  background: #e0e0e0;
+  filter: blur(1px);
+  user-select: none;
+  padding: 8px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.submit-btn {
+  background: linear-gradient(90deg, #198754, #0b5ed7);
+  border: none;
+  padding: 12px;
+  font-size: 18px;
+}
+</style>
+</head>
+
+<body onload="generateAppNo(); generateCaptcha();">
+
+<div class="gov-header text-center">
+  <h4>Government of Tamil Nadu</h4>
+  <div>Student Bus Pass Management System</div>
+</div>
+
+<div class="container my-4">
+<div class="card shadow form-card">
+<div class="card-body">
+
+<h4 class="text-center mb-4 text-primary">🚌 Student Bus Pass Application</h4>
+
+<form action="/apply" method="POST" enctype="multipart/form-data"
+      onsubmit="return validateRoute() && validateCaptcha()">
+
+<!-- APPLICATION -->
+<div class="section-title">Application Details</div>
+<input type="text" name="applicationNo" id="applicationNo"
+       class="form-control mb-3" readonly>
+
+<!-- DOCUMENTS -->
+<div class="section-title">Upload Enclosures</div>
+
+<label class="required">Student Photo</label>
+<input type="file" name="studentPhoto" class="form-control mb-3" required>
+
+<label class="required">Aadhaar Card</label>
+<input type="file" name="aadhaarFile" class="form-control mb-3" required>
+
+<label class="required">College / School ID Proof</label>
+<input type="file" name="idProof" class="form-control mb-3" required>
+
+<label class="required">Bonafide</label>
+<input type="file" name="bonafide" class="form-control mb-3" required>
+
+<!-- STUDENT -->
+<div class="section-title">Student Details</div>
+<label class="required">Student Name</label>
+<input type="text" name="studentName" class="form-control mb-3"
+       placeholder="Student Name" required>
+
+<label class="required">Father/Guardian Name</label>
+<input type="text" name="fatherName" class="form-control mb-3"
+       placeholder="Father / Guardian Name" required>
+
+<div class="row">
+  <div class="col-md-6">
+    <label class="required">Date of Birth</label>
+   <input type="date" name="dob" id="dob"
+       class="form-control mb-3" required onchange="calculateAge()">
+
+  <div class="col-md-6">
+  <label class="required">Age</label>
+  <input type="text" name="age" id="age"
+         class="form-control mb-3" readonly>
+</div>
+
+
+  <div class="col-md-6">
+    <label class="required">Gender</label>
+    <select name="gender" class="form-select mb-3" required>
+      <option value="">Select Gender</option>
+      <option>Male</option>
+      <option>Female</option>
+      <option>Other</option>
+    </select>
+  </div>
+</div>
+
+<!-- CONTACT -->
+<div class="section-title">Contact Details</div>
+
+<label class="required">Student Contact Number
+  <i class="bi bi-telephone-fill me-1"></i>
+</label>
+
+<div class="input-group mb-3">
+  </span>
+  <input type="tel" name="studentContact"
+         class="form-control"
+         pattern="[0-9]{10}"
+         placeholder="Enter 10-digit mobile number"
+         required>
+</div>
+
+<label class="required">
+  Parent Contact Number
+  <i class="bi bi-telephone-fill me-1"></i>
+</label>
+
+<div class="input-group mb-3">
+  <input type="tel" name="parentContact"
+         class="form-control"
+         pattern="[0-9]{10}"
+         placeholder="Enter 10-digit mobile number"
+         required>
+</div>
+
+
+  <div class="col-md-6">
+    <label class="required"   >
+      Personal Email
+      <i class="bi bi-envelope-fill me-1"></i>
+    </label>
+    <input type="email" name="personalEmail" class="form-control" required>
+  </div>
+
+  <div class="col-md-6">
+    <label class="required">College Email/School Email
+      <i class="bi bi-envelope-fill me-1"></i>
+    </label>
+    <input type="email" name="collegeEmail/schoolmail" class="form-control" required>
+  </div>
+</div>
+
+
+<!-- DISTRICT -->
+<label class="required">District</label>
+<select name="district" id="district" class="form-select mb-3" required>
+  <option value="">Select District</option>
+  <option>Ariyalur</option>
+  <option>Chengalpattu</option>
+  <option>Chennai</option>
+  <option>Coimbatore</option>
+  <option>Cuddalore</option>
+  <option>Dharmapuri</option>
+  <option>Dindigul</option>
+  <option>Erode</option>
+  <option>Kallakurichi</option>
+  <option>Kancheepuram</option>
+  <option>Kanyakumari</option>
+  <option>Karur</option>
+  <option>Krishnagiri</option>
+  <option>Madurai</option>
+  <option>Mayiladuthurai</option>
+  <option>Nagapattinam</option>
+  <option>Namakkal</option>
+  <option>Nilgiris</option>
+  <option>Perambalur</option>
+  <option>Pudukkottai</option>
+  <option>Ramanathapuram</option>
+  <option>Ranipet</option>
+  <option>Salem</option>
+  <option>Sivaganga</option>
+  <option>Tenkasi</option>
+  <option>Thanjavur</option>
+  <option>Theni</option>
+  <option>Thoothukudi</option>
+  <option>Tiruchirappalli</option>
+  <option>Tirunelveli</option>
+  <option>Tirupattur</option>
+  <option>Tiruppur</option>
+  <option>Tiruvallur</option>
+  <option>Tiruvannamalai</option>
+  <option>Tiruvarur</option>
+  <option>Vellore</option>
+  <option>Viluppuram</option>
+  <option>Virudhunagar</option>
+</select>
+
+<label class="required">Institution Type</label>
+<select id="institutionType"
+        name="institutionType"
+        class="form-select mb-3"
+        onchange="toggleEducation()" required>
+  <option value="">Select</option>
+  <option value="School">School</option>
+  <option value="College">College</option>
+</select>
+
+
+<div id="schoolSection" style="display:none;">
+  <label class="required">School Name</label>
+  <input type="text"
+         id="schoolName"
+         name="schoolName"
+         class="form-control mb-3"
+         placeholder="Enter School Name"
+         disabled>
+
+  <label class="required">Standard</label>
+  <select name="standard"
+          id="standard"
+          class="form-select mb-3"
+          disabled>
+    <option value="">Select Standard</option>
+    <option>6th Standard</option>
+    <option>7th Standard</option>
+    <option>8th Standard</option>
+    <option>9th Standard</option>
+    <option>10th Standard</option>
+    <option>11th Standard</option>
+    <option>12th Standard</option>
+  </select>
+</div>
+
+
+<div id="collegeSection" style="display:none;">
+  <label class="required">College Name</label>
+  <input type="text"
+         id="collegeName"
+         name="collegeName"
+         class="form-control mb-3"
+         placeholder="Enter College Name"
+         disabled>
+
+  <label class="required">Department</label>
+  <input type="text"
+         id="department"
+         name="department"
+         class="form-control mb-3"
+         placeholder="Engineering / Arts / Science"
+         disabled>
+
+  <label class="required">Year</label>
+  <select name="year"
+          id="year"
+          class="form-select mb-3"
+          disabled>
+    <option value="">Select Year</option>
+    <option>1st Year</option>
+    <option>2nd Year</option>
+    <option>3rd Year</option>
+    <option>4th Year</option>
+  </select>
+</div>
+
+
+<label>College Address/School Adress</label>
+<textarea name="collegeAddress" class="form-control mb-3" rows="2"
+          placeholder="College Address/School Address"></textarea>
+
+        
+
+<!-- ROUTE -->
+<div class="section-title">Route Details</div>
+
+<div class="row">
+  <div class="col-md-6">
+    <label class="required">Starting Route</label>
+    <input type="text" id="startRoute" name="startRoute"
+           class="form-control" required>
+  </div>
+
+  <div class="col-md-6">
+    <label class="required">Destination Route</label>
+    <input type="text" id="endRoute" name="endRoute"
+           class="form-control" required>
+  </div>
+</div>
+
+<!-- CAPTCHA -->
+<div class="row align-items-center">
+<div class="row-md-2">
+  <div class="col-md-4">
+    <canvas id="captchaCanvas" width="160" height="50"
+            style="border:1px solid #ccc;"></canvas>
+  </div>
+  <div class="col-md-8">
+    <input type="text" id="captchaInput" class="form-control"
+           placeholder="Enter Captcha" required>
+  </div>
+  </div>
+</div>
+
+<div class="text-center mt-2">
+  <button type="button" class="btn btn-sm btn-outline-secondary"
+          onclick="generateCaptcha()">↻ Refresh Captcha</button>
+</div>
+
+
+<!-- SUBMIT -->
+<div class="text-center mt-4">
+  <button class="btn btn-success submit-btn w-50">
+    Submit Application
+  </button>
+</div>
+
+</form>
+
+</div>
+</div>
+</div>
+
+<script>
+let captcha = "";
+
+//APPLICATION NUMBER/
+function generateAppNo() {
+  const appNo = Math.floor(10000000 + Math.random() * 90000000);
+  document.getElementById("applicationNo").value = appNo;
+}
+
+// AGE CALCULATION
+function calculateAge() {
+  const dob = document.getElementById("dob").value;
+  if (!dob) return;
+
+  const birthDate = new Date(dob);
+  const today = new Date();
+
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+
+  document.getElementById("age").value = age;
+}
+
+function toggleEducation() {
+  const type = document.getElementById("institutionType").value;
+
+  const school = document.getElementById("schoolSection");
+  const college = document.getElementById("collegeSection");
+
+  const schoolName = document.getElementById("schoolName");
+  const standard = document.getElementById("standard");
+
+  const collegeName = document.getElementById("collegeName");
+  const department = document.getElementById("department");
+  const year = document.getElementById("year");
+
+  if (type === "School") {
+    school.style.display = "block";
+    college.style.display = "none";
+
+    schoolName.disabled = false;
+    standard.disabled = false;
+    schoolName.required = true;
+    standard.required = true;
+
+    collegeName.disabled = true;
+    department.disabled = true;
+    year.disabled = true;
+
+    collegeName.value = "";
+    department.value = "";
+    year.value = "";
+  }
+  else if (type === "College") {
+    college.style.display = "block";
+    school.style.display = "none";
+
+    collegeName.disabled = false;
+    department.disabled = false;
+    year.disabled = false;
+    collegeName.required = true;
+    department.required = true;
+    year.required = true;
+
+    schoolName.disabled = true;
+    standard.disabled = true;
+
+    schoolName.value = "";
+    standard.value = "";
+  }
+  else {
+    school.style.display = "none";
+    college.style.display = "none";
+  }
+}
+
+
+// CAPTCHA 
+function generateCaptcha() {
+  const canvas = document.getElementById("captchaCanvas");
+  const ctx = canvas.getContext("2d");
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Background
+  ctx.fillStyle = "#eaeaea";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Generate captcha text
+  captcha = Math.random().toString(36).substring(2, 7).toUpperCase();
+
+  // Noise lines
+  for (let i = 0; i < 6; i++) {
+    ctx.strokeStyle = "#" + Math.random().toString(16).slice(2, 8);
+    ctx.beginPath();
+    ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+    ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
+    ctx.stroke();
+  }
+
+  // Text
+  ctx.font = "28px Arial";
+  ctx.fillStyle = "#2f7d32";
+  ctx.setTransform(1, -0.2, 0.1, 1, 0, 0);
+  ctx.fillText(captcha, 30, 35);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+}
+
+//ROUTE VALIDATION 
+function validateRoute() {
+  const s = document.getElementById("startRoute").value.trim();
+  const e = document.getElementById("endRoute").value.trim();
+
+  if (s === e) {
+    alert("Starting route and destination cannot be the same");
+    return false;
+  }
+  return true;
+}
+
+//CAPTCHA VALIDATION 
+function validateCaptcha() {
+  const input = document.getElementById("captchaInput").value.toUpperCase();
+
+  if (input !== captcha) {
+    alert("Invalid Captcha");
+    generateCaptcha();
+    return false;
+  }
+  return true;
+}
+</script>
