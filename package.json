@@ -6,12 +6,19 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "body-parser": "^2.2.2",
+    "dotenv": "^17.4.1",
+    "ejs": "^4.0.1",
     "express": "^4.22.1",
-    "express-session": "^1.18.2",
-    "mongoose": "^8.21.0",
+    "express-session": "^1.19.0",
+    "mongoose": "^8.23.0",
     "multer": "^2.0.2",
+    "nodemailer": "^6.10.1",
     "pdfkit": "^0.17.2",
-    "session": "^0.1.0"
+    "session": "^0.1.0",
+    "svg-captcha": "^1.4.0",
+    "uuid": "^13.0.0"
   },
   "keywords": [],
   "author": "",
